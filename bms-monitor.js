@@ -1,18 +1,28 @@
 const {expect} = require('chai');
+const Battery = require('./battery');
+const BMS_FIXED = require('./bmsConfig');
 
-function batteryIsOk(temperature, soc, charge_rate) {
-    if (temperature < 0 || temperature > 45) {
-        console.log('Temperature is out of range!');
-        return false;
-    } else if (soc < 20 || soc > 80) {
-        console.log('State of Charge is out of range!')
-        return false;
-    } else if (charge_rate > 0.8) {
-        console.log('Charge rate is out of range!');
-        return false;
+
+isPropertyOutOfRange = function(name,battery, bmsFixedValue) { 
+    let isOutOfRange = false;
+    if (battery[name] > bmsFixedValue.max || battery[name] < bmsFixedValue.min) {
+        console.log(`${bmsFixedValue.name} is out of range! - ${battery.printAllBatteryValues()}`);
+        isOutOfRange = true;
     }
-    return true;
+    return isOutOfRange;
 }
 
-expect(batteryIsOk(25, 70, 0.7)).to.be.true;
-expect(batteryIsOk(50, 85, 0)).to.be.false;
+function batteryIsOk(battery, bmsFixedValues) {
+   return !(isPropertyOutOfRange("temperature",battery,bmsFixedValues.temperature) || 
+             isPropertyOutOfRange("stateOfCharge",battery,bmsFixedValues.stateOfCharge)|| 
+             isPropertyOutOfRange("chargeRate",battery,bmsFixedValues.chargeRate))       
+}
+
+expect(batteryIsOk(new Battery(25, 70, 0.7), BMS_FIXED)).to.be.true;
+expect(batteryIsOk(new Battery(50, 70, 0.8), BMS_FIXED)).to.be.false;
+expect(batteryIsOk(new Battery(40, 90, 0.8), BMS_FIXED)).to.be.false;
+expect(batteryIsOk(new Battery(20, 70, 0.9), BMS_FIXED)).to.be.false;
+expect(batteryIsOk(new Battery(-25, 70, 0.8), BMS_FIXED)).to.be.false;
+expect(batteryIsOk(new Battery(40, 10, 0.8), BMS_FIXED)).to.be.false;
+expect(batteryIsOk(new Battery(20, 100, 0.08), BMS_FIXED)).to.be.false;
+
