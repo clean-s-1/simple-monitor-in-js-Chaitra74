@@ -1,5 +1,9 @@
 {
   "devDependencies": {
     "chai": "^4.3.6"
+  },
+  "dependencies": {
+    "@vitalets/google-translate-api": "^8.0.0",
+    "jshint": "^2.13.4"
   }
 }
